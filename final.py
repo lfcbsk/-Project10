@@ -502,7 +502,6 @@ def avg_cost_per_vehicle_type(connection):
 
 def calculate_delivery_success_rate(connection):
     """Calculate and display the delivery success rate with formatted output"""
-    with connection:
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT
@@ -527,7 +526,6 @@ def calculate_delivery_success_rate(connection):
             print("=" * 38)
 
 def calculate_order_success_rate(connection):
-    with connection:
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT
