@@ -502,52 +502,52 @@ def avg_cost_per_vehicle_type(connection):
 
 def calculate_delivery_success_rate(connection):
     """Calculate and display the delivery success rate with formatted output"""
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT
-                    SUM(Status = 'successful') AS SuccessfulCount,
-                    SUM(Status = 'failed') AS FailedCount
-                FROM Deliveries;
-            """)
-            result = cursor.fetchone()
-            successful = result[0] or 0
-            failed = result[1] or 0
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                SUM(Status = 'successful') AS SuccessfulCount,
+                SUM(Status = 'failed') AS FailedCount
+            FROM Deliveries;
+        """)
+        result = cursor.fetchone()
+        successful = result[0] or 0
+        failed = result[1] or 0
 
-            total = successful + failed
-            print("\n=== Delivery Success Rate Report ===")
-            if total == 0:
-                print("No completed deliveries yet.")
-            else:
-                success_rate = (successful / total) * 100
-                print(f"{'Successful Deliveries':<25}: {successful}")
-                print(f"{'Failed Deliveries':<25}: {failed}")
-                print(f"{'Total Deliveries':<25}: {total}")
-                print(f"{'Success Rate':<25}: {success_rate:.2f}%")
-            print("=" * 38)
+        total = successful + failed
+        print("\n=== Delivery Success Rate Report ===")
+        if total == 0:
+            print("No completed deliveries yet.")
+        else:
+            success_rate = (successful / total) * 100
+            print(f"{'Successful Deliveries':<25}: {successful}")
+            print(f"{'Failed Deliveries':<25}: {failed}")
+            print(f"{'Total Deliveries':<25}: {total}")
+            print(f"{'Success Rate':<25}: {success_rate:.2f}%")
+        print("=" * 38)
 
 def calculate_order_success_rate(connection):
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT
-                    SUM(Status = 'successful') AS SuccessfulCount,
-                    SUM(Status = 'failed') AS FailedCount
-                FROM Orders;
-            """)
-            result = cursor.fetchone()
-            successful = result[0] or 0
-            failed = result[1] or 0
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                SUM(Status = 'successful') AS SuccessfulCount,
+                SUM(Status = 'failed') AS FailedCount
+            FROM Orders;
+        """)
+        result = cursor.fetchone()
+        successful = result[0] or 0
+        failed = result[1] or 0
 
-            total = successful + failed
-            print("\n=== Order Success Rate Report ===")
-            if total == 0:
-                print("No completed or failed orders yet.")
-            else:
-                success_rate = (successful / total) * 100
-                print(f"{'Successful Orders':<25}: {successful}")
-                print(f"{'Failed Orders':<25}: {failed}")
-                print(f"{'Total Orders':<25}: {total}")
-                print(f"{'Success Rate':<25}: {success_rate:.2f}%")
-            print("=" * 36)
+        total = successful + failed
+        print("\n=== Order Success Rate Report ===")
+        if total == 0:
+            print("No completed or failed orders yet.")
+        else:
+            success_rate = (successful / total) * 100
+            print(f"{'Successful Orders':<25}: {successful}")
+            print(f"{'Failed Orders':<25}: {failed}")
+            print(f"{'Total Orders':<25}: {total}")
+            print(f"{'Success Rate':<25}: {success_rate:.2f}%")
+        print("=" * 36)
 
 def generate_invoice(connection):
     while True:    
