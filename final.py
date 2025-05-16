@@ -559,9 +559,9 @@ def generate_invoice(connection):
     try:
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT DeliveryID
+                SELECT DeliveryID, DeliveryEndDate
                 FROM Deliveries 
-                WHERE DeliveryID = %s AND d.Status = 'successful'
+                WHERE DeliveryID = %s AND Status = 'successful'
                 """, (delivery_id,))
             delivery = cursor.fetchone()
             if not delivery:
@@ -577,7 +577,7 @@ def generate_invoice(connection):
             print("="*60)
             print(f"{'INVOICE':>30}")
             print()
-            print(f"Delivery ID #: {delivery_id:<20} DATE: {delivery[3]}")
+            print(f"Delivery ID #: {delivery_id:<20} DATE: {delivery[1]}")
             print()
             print(f"BILL TO: HQ")
             print()
