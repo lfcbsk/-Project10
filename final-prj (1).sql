@@ -1,7 +1,7 @@
 CREATE DATABASE Delivery_System;
 USE Delivery_System;
 # DROP DATABASE Delivery_System;
-
+SET @key_string := SHA2('key', 256);
 CREATE TABLE Countries (
 	CountryCode INT AUTO_INCREMENT PRIMARY KEY,
     CountryName VARCHAR(100)
@@ -262,13 +262,13 @@ JOIN Vehicles v ON d.VehicleID = v.VehicleID
 WHERE o.Status = 'in transit';
 # SELECT * FROM CurrentDeliverySchedule;
 
-#DROP VIEW ShipperView;
+#DROP VIEW ShipperCustomerView;
 CREATE VIEW ShipperCustomerView AS
 SELECT 
 d.DeliveryID,
 c.CustomerName,
-c.PhoneNumber, 
-c.Address,
+CONVERT(AES_DECRYPT(AES_ENCRYPT(c.PhoneNumber, UNHEX(SHA2('key_string', 256))), UNHEX(SHA2('key_string', 256))) USING utf8mb4), 
+CONVERT(AES_DECRYPT(AES_ENCRYPT(c.Address, UNHEX(SHA2('key_string', 256))), UNHEX(SHA2('key_string', 256))) USING utf8mb4), 
 Cities.CityName,
 Countries.CountryName,
 v.VehicleType,
@@ -281,6 +281,7 @@ JOIN Vehicles v ON v.VehicleID = d.VehicleID
 JOIN Cities ON Cities.CityCode = c.City
 JOIN Countries ON Countries.CountryCode = Cities.CountryCode
 WHERE d.Status = 'transit customer';
+# select * from ShipperCustomerView;
 
 CREATE VIEW ShipperWarehouseView AS
 SELECT 
@@ -396,8 +397,8 @@ CREATE TRIGGER Encrypt2CustomerInfo
 BEFORE INSERT ON Customers
 FOR EACH ROW
 BEGIN
-	SET NEW.PhoneNumber = AES_ENCRYPT(NEW.PhoneNumber, 'key');
-	SET NEW.Address = AES_ENCRYPT(NEW.Address, 'key');
+	SET NEW.PhoneNumber = AES_ENCRYPT(NEW.PhoneNumber, 'key_string');
+	SET NEW.Address = AES_ENCRYPT(NEW.Address, 'key_string');
 END $$
 DELIMITER ;
 
@@ -406,8 +407,8 @@ CREATE TRIGGER EncryptCustomerPhone
 BEFORE UPDATE ON Customers
 FOR EACH ROW
 BEGIN
-	IF NEW.PhoneNumber != AES_DECRYPT(OLD.PhoneNumber, 'key') THEN
-		SET NEW.PhoneNumber = AES_ENCRYPT(NEW.PhoneNumber, 'key');
+	IF NEW.PhoneNumber != AES_DECRYPT(OLD.PhoneNumber, 'key_string') THEN
+		SET NEW.PhoneNumber = AES_ENCRYPT(NEW.PhoneNumber, 'key_string');
 	END IF;
 END $$
 DELIMITER ;
@@ -417,8 +418,8 @@ CREATE TRIGGER EncryptCustomerAddress
 BEFORE UPDATE ON Customers
 FOR EACH ROW
 BEGIN
-    IF NEW.Address != AES_DECRYPT(OLD.Address, 'key') THEN
-		SET NEW.Address = AES_ENCRYPT(NEW.Address, 'key');
+    IF NEW.Address != AES_DECRYPT(OLD.Address, 'key_string') THEN
+		SET NEW.Address = AES_ENCRYPT(NEW.Address, 'key_string');
 	END IF;
 END $$
 DELIMITER ;
@@ -484,6 +485,7 @@ GRANT SELECT ON Countries TO 'shipper'@'%';
 GRANT INSERT ON Expenses TO 'shipper'@'%';
 GRANT SELECT ON ShipperCustomerView TO 'shipper'@'%';
 GRANT SELECT ON ShipperWarehouseView TO 'shipper'@'%';
+GRANT SELECT ON OutstandingOrders TO 'dispatcher'@'%';
 
 CREATE USER 'accountant'@'%' IDENTIFIED BY 'accountant_pass';
 GRANT SELECT ON Expenses TO 'accountant'@'%';
@@ -502,3 +504,59 @@ GRANT SELECT ON Countries TO 'accountant'@'%';
 # WHERE 
 #     CONSTRAINT_NAME = 'PRIMARY'
 #     AND TABLE_SCHEMA = 'Delivery_System';
+
+# SELECT 
+#     TABLE_NAME,
+#     COLUMN_NAME,
+#     REFERENCED_TABLE_NAME,
+#     REFERENCED_COLUMN_NAME
+# FROM 
+#     INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+# WHERE 
+#     CONSTRAINT_NAME != 'PRIMARY'
+#     AND TABLE_SCHEMA = 'Delivery_System';
+
+## select all indexes
+# SELECT 
+#     TABLE_NAME, 
+#     INDEX_NAME, 
+#     COLUMN_NAME, 
+#     NON_UNIQUE, 
+#     SEQ_IN_INDEX 
+# FROM INFORMATION_SCHEMA.STATISTICS
+# WHERE TABLE_SCHEMA = DATABASE()
+# ORDER BY TABLE_NAME, INDEX_NAME, SEQ_IN_INDEX;
+
+## select all attributes of type ENUM
+# SELECT 
+#     TABLE_NAME, 
+#     COLUMN_NAME, 
+#     COLUMN_TYPE 
+# FROM INFORMATION_SCHEMA.COLUMNS
+# WHERE TABLE_SCHEMA = DATABASE()
+#   AND DATA_TYPE = 'enum';
+
+## select all triggers
+# SELECT 
+#     TRIGGER_NAME, 
+#     EVENT_OBJECT_TABLE AS TABLE_NAME, 
+#     EVENT_MANIPULATION AS EVENT, 
+#     ACTION_STATEMENT, 
+#     ACTION_TIMING 
+# FROM INFORMATION_SCHEMA.TRIGGERS
+# WHERE TRIGGER_SCHEMA = DATABASE();
+
+# SELECT 
+#     TABLE_NAME, 
+#     COLUMN_NAME, 
+#     COLUMN_TYPE 
+# FROM INFORMATION_SCHEMA.COLUMNS
+# WHERE TABLE_SCHEMA = DATABASE()
+#   AND DATA_TYPE = 'enum';
+#   
+#   select * from information_schema.views;
+#   
+SELECT *
+FROM information_schema.views
+WHERE table_schema = 'Delivery_System';
+
